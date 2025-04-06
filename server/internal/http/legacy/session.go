@@ -66,7 +66,7 @@ func (h *LegacyHandler) newSession(r *http.Request) *session {
 }
 
 func (s *session) req(method, path string, headers http.Header, request io.Reader) (io.ReadCloser, http.Header, error) {
-	req, err := http.NewRequest(method, "http://"+s.serverAddr+path, request)
+	req, err := http.NewRequest(method, "https://"+s.serverAddr+path, request)
 	if err != nil {
 		return nil, nil, err
 	}
