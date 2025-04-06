@@ -1,6 +1,7 @@
 package legacy
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -9,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/m1k1o/neko/server/internal/api"
 	oldEvent "github.com/m1k1o/neko/server/internal/http/legacy/event"
@@ -37,7 +39,11 @@ var (
 	}
 
 	// DefaultDialer is a dialer with all fields set to the default zero values.
-	DefaultDialer = websocket.DefaultDialer
+	DefaultDialer = &websocket.Dialer{
+		Proxy:            http.ProxyFromEnvironment,
+		HandshakeTimeout: 45 * time.Second,
+		TLSClientConfig:  &tls.Config{InsecureSkipVerify: true},
+	}
 )
 
 type LegacyHandler struct {
@@ -99,7 +105,7 @@ func (h *LegacyHandler) Route(r types.Router) {
 		defer s.destroy()
 
 		// dial to the remote backend
-		connBackend, _, err := DefaultDialer.Dial("ws://"+h.serverAddr+"/api/ws?token="+url.QueryEscape(s.token), nil)
+		connBackend, _, err := DefaultDialer.Dial("wss://"+h.serverAddr+"/api/ws?token="+url.QueryEscape(s.token), nil)
 		if err != nil {
 			h.logger.Error().Err(err).Msg("couldn't dial to the remote backend")
 

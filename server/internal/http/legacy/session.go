@@ -2,6 +2,7 @@ package legacy
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -55,12 +56,15 @@ type session struct {
 }
 
 func (h *LegacyHandler) newSession(r *http.Request) *session {
+	tr := &http.Transport {
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
 	return &session{
 		r:          r,
 		h:          h,
 		logger:     h.logger,
 		serverAddr: h.serverAddr,
-		client:     http.DefaultClient,
+		client:     &http.Client{Transport: tr},
 		sessions:   make(map[string]*memberStruct),
 	}
 }
